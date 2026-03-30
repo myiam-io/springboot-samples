@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>대시보드</title>
+</head>
+<body>
+    <h1>대시보드</h1>
+    <p>Access Token: <span th:text="${accessTokenPreview}"></span></p>
+    <p>세션 만료: <span th:text="${expiresAt}"></span></p>
+
+    <button onclick="api('/api/token/info')">토큰 정보 조회 (MyIAM API)</button>
+    <button onclick="api('/api/debug/oidc-user')">OidcUser 정보 (로컬 세션)</button>
+    <pre id="r"></pre>
+    <br>
+    <a href="/api/auth/logout">로그아웃</a>
+
+    <script>
+        async function api(url) {
+            const el = document.getElementById('r');
+            el.textContent = '요청 중...';
+            const res = await fetch(url);
+            const text = await res.text();
+            try { el.textContent = JSON.stringify(JSON.parse(text), null, 2); }
+            catch { el.textContent = text; }
+        }
+    </script>
+</body>
+</html>

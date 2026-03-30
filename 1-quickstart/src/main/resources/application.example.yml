@@ -1,0 +1,25 @@
+server:
+  port: 3000
+
+myiam:
+  base-url: https://api.myiam.io
+  service-uid: my-service
+  api-key: my-api-key
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          myiam:
+            client-id: my-client-id
+            client-authentication-method: none
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:3000/login/oauth2/code/myiam
+            scope: openid
+        provider:
+          myiam:
+            authorization-uri: https://app.myiam.io/oauth2/authorize
+            token-uri: https://app.myiam.io/oauth2/token
+            jwk-set-uri: https://app.myiam.io/oauth2/jwks
+            user-name-attribute: sub

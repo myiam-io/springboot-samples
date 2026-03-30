@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>서버 대시보드</title>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</head>
+<body>
+    <h1>서버 대시보드</h1>
+
+    <div th:if="${username != null}">
+        <p>사용자: <span th:text="${username}"></span></p>
+        <p>UID: <span id="userUid" th:text="${userUid}"></span></p>
+    </div>
+    <p>세션 만료: <span th:text="${expiresAt}"></span></p>
+
+    <hr>
+    <h2>API 테스터</h2>
+
+    <h3>토큰 API</h3>
+    <button onclick="api('GET', '/api/myiam/token/info')">getTokenInfo()</button>
+    <button onclick="api('POST', '/api/myiam/token/delete')">deleteToken()</button>
+
+    <h3>사용자 API</h3>
+    <button onclick="api('GET', '/api/myiam/user/me')">getUser()</button>
+    <button onclick="api('GET', '/api/myiam/service-user/get?serviceUserUid=' + uid())">getServiceUser()</button>
+    <button onclick="api('GET', '/api/myiam/service-user/profile/get?serviceUserUid=' + uid())">getServiceUserProfile()</button>
+
+    <h3>사용자 액션</h3>
+    <select id="actionType">
+        <option value="deregister">deregister</option>
+        <option value="set-password">set-password</option>
+        <option value="reset-password">reset-password</option>
+        <option value="edit-profile">edit-profile</option>
+        <option value="edit-email">edit-email</option>
+        <option value="passkey">passkey</option>
+    </select>
+    <button onclick="action()">prepareUserAction()</button>
+
+    <h3>결과</h3>
+    <a id="redirectLink" href="#" target="_blank"
+       style="display:none;padding:8px 20px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold">
+        redirect_url로 이동하기 &rarr;
+    </a>
+    <pre id="result" style="background:#f5f5f5;padding:12px;min-height:40px;white-space:pre-wrap"></pre>
+
+    <br>
+    <a href="/api/auth/logout">로그아웃</a>
+
+    <script>
+        const csrf = {
+            header: document.querySelector('meta[name="_csrf_header"]')?.content,
+            token: document.querySelector('meta[name="_csrf"]')?.content
+        };
+
+        function uid() { return document.getElementById('userUid')?.textContent || ''; }
+
+        async function api(method, url, body) {
+            const el = document.getElementById('result');
+            const link = document.getElementById('redirectLink');
+            el.textContent = '요청 중...';
+            link.style.display = 'none';
+            const headers = {};
+            if (csrf.header && csrf.token && method !== 'GET') headers[csrf.header] = csrf.token;
+            if (body) headers['Content-Type'] = 'application/json';
+            const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+            const text = await res.text();
+            try {
+                const json = JSON.parse(text);
+                el.textContent = method + ' ' + url + '\n\n' + JSON.stringify(json, null, 2);
+                if (json.redirect_url) {
+                    link.href = json.redirect_url;
+                    link.style.display = 'inline';
+                }
+            } catch {
+                el.textContent = method + ' ' + url + '\n\n' + text;
+            }
+        }
+
+        function action() {
+            const type = document.getElementById('actionType').value;
+            api('POST', '/api/myiam/user/action?type=' + type, {
+                serviceUserUid: uid(),
+                completeRedirectUrl: location.origin + '/dashboard'
+            });
+        }
+    </script>
+</body>
+</html>

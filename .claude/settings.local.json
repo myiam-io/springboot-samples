@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/sheldon-park/code/myiam-io/springboot_samples -not -path */.git/* -type f)",
+      "Bash(git config:*)",
+      "Bash(gradle build:*)",
+      "Bash(cp 1-quickstart/src/main/resources/application.yml 1-quickstart/src/main/resources/application.example.yml)",
+      "Bash(cp 2-basic/src/main/resources/application.yml 2-basic/src/main/resources/application.example.yml)",
+      "Bash(gh repo:*)",
+      "Bash(git remote:*)"
+    ]
+  }
+}
